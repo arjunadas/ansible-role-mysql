@@ -1,0 +1,36 @@
+---
+- name: Variable configuration
+  ansible.builtin.include_tasks: variables.yml
+
+- name: Setup/install task setup-RedHat.yml
+  ansible.builtin.include_tasks: setup-RedHat.yml
+  when: ansible_os_family == 'RedHat'
+
+- name: Setup/install task setup-Debian.yml
+  ansible.builtin.include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Setup/install task setup-Archlinux.yml
+  ansible.builtin.include_tasks: setup-Archlinux.yml
+  when: ansible_os_family == 'Archlinux'
+
+- name: Check if MySQL packages were installed
+  ansible.builtin.set_fact:
+    mysql_install_packages: "{{ (rh_mysql_install_packages is defined and rh_mysql_install_packages.changed)
+      or (deb_mysql_install_packages is defined and deb_mysql_install_packages.changed)
+      or (arch_mysql_install_packages is defined and arch_mysql_install_packages.changed) }}"
+
+- name: Configure MySQL - configure.yml
+  ansible.builtin.include_tasks: configure.yml
+
+- name: Configure MySQL - secure-installation.yml
+  ansible.builtin.include_tasks: secure-installation.yml
+
+- name: Configure MySQL - databases.yml
+  ansible.builtin.include_tasks: databases.yml
+
+- name: Configure MySQL - users.yml
+  ansible.builtin.include_tasks: users.yml
+
+- name: Configure MySQL - replication.yml
+  ansible.builtin.include_tasks: replication.yml
