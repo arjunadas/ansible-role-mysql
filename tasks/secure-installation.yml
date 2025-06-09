@@ -1,6 +1,6 @@
 ---
 - name: Ensure default user is present.
-  mysql_user:
+  community.mysql.mysql_user:
     name: "{{ mysql_user_name }}"
     host: 'localhost'
     password: "{{ mysql_user_password }}"
@@ -15,7 +15,7 @@
     src: "user-my.cnf.j2"
     dest: "{{ mysql_user_home }}/.my.cnf"
     owner: "{{ mysql_user_name }}"
-    mode: 0600
+    mode: '0600'
   no_log: "{{ mysql_hide_passwords }}"
   when: >
     mysql_user_name != mysql_root_username
@@ -48,8 +48,8 @@
     "ALTER USER '{{ mysql_root_username }}'@'{{ item }}'
      IDENTIFIED {{ (mysql_daemon == 'mariadb') | ternary('VIA unix_socket', 'WITH auth_socket') }}; FLUSH PRIVILEGES;"
   no_log: "{{ mysql_hide_passwords }}"
-  with_items: "{{ mysql_root_hosts.stdout_lines|default([]) }}"
-  when:
+  with_items: "{{ mysql_root_hosts.stdout_lines | default([]) }}"
+  when: # noqa: no-changed-when
     - (mysql_install_packages | bool) or mysql_root_password_update
     - ansible_system == "Linux"
     - (mysql_cli_version is version('8.0.34', '>=') and mysql_daemon == 'mysql') or
@@ -65,8 +65,8 @@
      IDENTIFIED {{ (mysql_daemon == 'mariadb') | ternary('VIA', 'WITH') }} mysql_native_password
      BY '{{ mysql_root_password }}'; FLUSH PRIVILEGES;"
   no_log: "{{ mysql_hide_passwords }}"
-  with_items: "{{ mysql_root_hosts.stdout_lines|default([]) }}"
-  when:
+  with_items: "{{ mysql_root_hosts.stdout_lines | default([]) }}"
+  when: # noqa: no-changed-when
     - (mysql_install_packages | bool) or mysql_root_password_update
     - (
         mysql_daemon == 'mysql' and (
@@ -82,8 +82,8 @@
     {{ mysql_daemon }} -NBe
     'SET PASSWORD FOR "{{ mysql_root_username }}"@"{{ item }}" = PASSWORD("{{ mysql_root_password }}"); FLUSH PRIVILEGES;'
   no_log: "{{ mysql_hide_passwords }}"
-  with_items: "{{ mysql_root_hosts.stdout_lines|default([]) }}"
-  when:
+  with_items: "{{ mysql_root_hosts.stdout_lines | default([]) }}"
+  when: # noqa: no-changed-when
     - (mysql_install_packages | bool) or mysql_root_password_update
     - (mysql_daemon == 'mysql' and mysql_cli_version is version('5.7', '<'))
 
@@ -94,9 +94,9 @@
     dest: "{{ mysql_root_home }}/.my.cnf"
     owner: root
     group: root
-    mode: 0600
+    mode: '0600'
   no_log: "{{ mysql_hide_passwords }}"
-  when:
+  when: # noqa: no-changed-when
     - mysql_install_packages | bool or mysql_root_password_update
     - mysql_copy_root_user_mycnf
 
@@ -108,13 +108,13 @@
   check_mode: false
 
 - name: Remove anonymous MySQL users.
-  mysql_user:
+  community.mysql.mysql_user:
     name: ""
     host: "{{ item }}"
     state: absent
-  with_items: "{{ mysql_anonymous_hosts.stdout_lines|default([]) }}"
+  with_items: "{{ mysql_anonymous_hosts.stdout_lines | default([]) }}"
 
 - name: Remove MySQL test database.
-  mysql_db:
+  community.mysql.mysql_db:
     name: 'test'
     state: absent

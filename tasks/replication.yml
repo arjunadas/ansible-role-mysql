@@ -51,7 +51,7 @@
     master_log_file: "{{ master.File }}"
     master_log_pos: "{{ master.Position }}"
   no_log: "{{ mysql_hide_passwords }}"
-  ignore_errors: true
+  ignore_errors: true  # noqa: ignore-errors
   when:
     - >
       (slave.Is_Slave is defined and not slave.Is_Slave) or
